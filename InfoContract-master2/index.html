@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>First DApp Demo</h1>
+        <h2 id="info"></h2>   
+        <label>姓名：</label>
+        <input id="name" type="text">  
+        <label >年齡：</label>
+        <input id="age" type="text">  
+        <button id="button">更新</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+        if (typeof web3 !== 'undefined') {  //若區塊鏈網路之web3不是沒有定義
+            web3 = new Web3(web3.currentProvider); //則用metamask所連接之區塊鏈網絡之節點   
+                                                 
+            console.log("web3 metamask provider:"+ web3);
+        } else {   //否則連到本地區塊鏈網絡之節點
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+            
+            console.log("web3 ganache provider:"+ web3);
+        }
+        web3.eth.defaultAccount = web3.eth.accounts[0];
+//web3.personal.unlockAccount(web3.eth.accounts[0], "12345678",0);
+
+        var infoContract = web3.eth.contract([
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_fName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_age",
+				"type": "uint256"
+			}
+		],
+		"name": "setInfo",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getInfo",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+        var infoC = infoContract.at('0xF12Fc1A7915023Bc36d0418c61a57E1AF0e83107');
+        infoC.getInfo(function(error, result){
+            if(!error)
+                {
+                    $("#info").html(result[0]+' ('+result[1]+' years old)');
+                    console.log(result);
+                }
+            else
+                console.error(error);
+        });
+
+        $("#button").click(function() {
+            var name = $("#name").val()
+            var age = $("#age").val()
+            infoC.setInfo( name, age, function(error, result) {
+                if(!error)
+                   {
+                       $("#info").html("set OK!");
+                       console.log("set OK!");
+                   }
+            })
+        });
+    </script>
+</body>
+    </html>
